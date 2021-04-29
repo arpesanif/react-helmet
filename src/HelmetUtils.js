@@ -8,7 +8,7 @@ import {
     REACT_TAG_MAP,
     SELF_CLOSING_TAGS,
     TAG_NAMES,
-    TAG_PROPERTIES
+    TAG_PROPERTIES,
 } from "./HelmetConstants.js";
 
 const encodeSpecialCharacters = (str, encode = true) => {
@@ -24,7 +24,7 @@ const encodeSpecialCharacters = (str, encode = true) => {
         .replace(/'/g, "&#x27;");
 };
 
-const getTitleFromPropsList = propsList => {
+const getTitleFromPropsList = (propsList) => {
     const innermostTitle = getInnermostProperty(propsList, TAG_NAMES.TITLE);
     const innermostTemplate = getInnermostProperty(
         propsList,
@@ -33,12 +33,10 @@ const getTitleFromPropsList = propsList => {
 
     if (innermostTemplate && innermostTitle) {
         // use function arg to avoid need to escape $ characters
-        return innermostTemplate.replace(
-            /%s/g,
-            () =>
-                Array.isArray(innermostTitle)
-                    ? innermostTitle.join("")
-                    : innermostTitle
+        return innermostTemplate.replace(/%s/g, () =>
+            Array.isArray(innermostTitle)
+                ? innermostTitle.join("")
+                : innermostTitle
         );
     }
 
@@ -50,7 +48,7 @@ const getTitleFromPropsList = propsList => {
     return innermostTitle || innermostDefaultTitle || undefined;
 };
 
-const getOnChangeClientState = propsList => {
+const getOnChangeClientState = (propsList) => {
     return (
         getInnermostProperty(propsList, HELMET_PROPS.ON_CHANGE_CLIENT_STATE) ||
         (() => {})
@@ -59,17 +57,17 @@ const getOnChangeClientState = propsList => {
 
 const getAttributesFromPropsList = (tagType, propsList) => {
     return propsList
-        .filter(props => typeof props[tagType] !== "undefined")
-        .map(props => props[tagType])
+        .filter((props) => typeof props[tagType] !== "undefined")
+        .map((props) => props[tagType])
         .reduce((tagAttrs, current) => {
-            return {...tagAttrs, ...current};
+            return { ...tagAttrs, ...current };
         }, {});
 };
 
 const getBaseTagFromPropsList = (primaryAttributes, propsList) => {
     return propsList
-        .filter(props => typeof props[TAG_NAMES.BASE] !== "undefined")
-        .map(props => props[TAG_NAMES.BASE])
+        .filter((props) => typeof props[TAG_NAMES.BASE] !== "undefined")
+        .map((props) => props[TAG_NAMES.BASE])
         .reverse()
         .reduce((innermostBaseTag, tag) => {
             if (!innermostBaseTag.length) {
@@ -98,7 +96,7 @@ const getTagsFromPropsList = (tagName, primaryAttributes, propsList) => {
     const approvedSeenTags = {};
 
     return propsList
-        .filter(props => {
+        .filter((props) => {
             if (Array.isArray(props[tagName])) {
                 return true;
             }
@@ -111,13 +109,13 @@ const getTagsFromPropsList = (tagName, primaryAttributes, propsList) => {
             }
             return false;
         })
-        .map(props => props[tagName])
+        .map((props) => props[tagName])
         .reverse()
         .reduce((approvedTags, instanceTags) => {
             const instanceSeenTags = {};
 
             instanceTags
-                .filter(tag => {
+                .filter((tag) => {
                     let primaryAttributeKey;
                     const keys = Object.keys(tag);
                     for (let i = 0; i < keys.length; i++) {
@@ -174,7 +172,7 @@ const getTagsFromPropsList = (tagName, primaryAttributes, propsList) => {
                     return false;
                 })
                 .reverse()
-                .forEach(tag => approvedTags.push(tag));
+                .forEach((tag) => approvedTags.push(tag));
 
             // Update seen tags with tags from this instance
             const keys = Object.keys(instanceSeenTags);
@@ -205,57 +203,66 @@ const getInnermostProperty = (propsList, property) => {
 
     return null;
 };
+const reducePropsToState = (propsList) => {
+    propsList.sort((a, b) => a.order - b.order);
 
-const reducePropsToState = propsList => ({
-    baseTag: getBaseTagFromPropsList(
-        [TAG_PROPERTIES.HREF, TAG_PROPERTIES.TARGET],
-        propsList
-    ),
-    bodyAttributes: getAttributesFromPropsList(ATTRIBUTE_NAMES.BODY, propsList),
-    defer: getInnermostProperty(propsList, HELMET_PROPS.DEFER),
-    encode: getInnermostProperty(
-        propsList,
-        HELMET_PROPS.ENCODE_SPECIAL_CHARACTERS
-    ),
-    htmlAttributes: getAttributesFromPropsList(ATTRIBUTE_NAMES.HTML, propsList),
-    linkTags: getTagsFromPropsList(
-        TAG_NAMES.LINK,
-        [TAG_PROPERTIES.REL, TAG_PROPERTIES.HREF],
-        propsList
-    ),
-    metaTags: getTagsFromPropsList(
-        TAG_NAMES.META,
-        [
-            TAG_PROPERTIES.NAME,
-            TAG_PROPERTIES.CHARSET,
-            TAG_PROPERTIES.HTTPEQUIV,
-            TAG_PROPERTIES.PROPERTY,
-            TAG_PROPERTIES.ITEM_PROP
-        ],
-        propsList
-    ),
-    noscriptTags: getTagsFromPropsList(
-        TAG_NAMES.NOSCRIPT,
-        [TAG_PROPERTIES.INNER_HTML],
-        propsList
-    ),
-    onChangeClientState: getOnChangeClientState(propsList),
-    scriptTags: getTagsFromPropsList(
-        TAG_NAMES.SCRIPT,
-        [TAG_PROPERTIES.SRC, TAG_PROPERTIES.INNER_HTML],
-        propsList
-    ),
-    styleTags: getTagsFromPropsList(
-        TAG_NAMES.STYLE,
-        [TAG_PROPERTIES.CSS_TEXT],
-        propsList
-    ),
-    title: getTitleFromPropsList(propsList),
-    titleAttributes: getAttributesFromPropsList(
-        ATTRIBUTE_NAMES.TITLE,
-        propsList
-    )
-});
+    return {
+        baseTag: getBaseTagFromPropsList(
+            [TAG_PROPERTIES.HREF, TAG_PROPERTIES.TARGET],
+            propsList
+        ),
+        bodyAttributes: getAttributesFromPropsList(
+            ATTRIBUTE_NAMES.BODY,
+            propsList
+        ),
+        defer: getInnermostProperty(propsList, HELMET_PROPS.DEFER),
+        encode: getInnermostProperty(
+            propsList,
+            HELMET_PROPS.ENCODE_SPECIAL_CHARACTERS
+        ),
+        htmlAttributes: getAttributesFromPropsList(
+            ATTRIBUTE_NAMES.HTML,
+            propsList
+        ),
+        linkTags: getTagsFromPropsList(
+            TAG_NAMES.LINK,
+            [TAG_PROPERTIES.REL, TAG_PROPERTIES.HREF],
+            propsList
+        ),
+        metaTags: getTagsFromPropsList(
+            TAG_NAMES.META,
+            [
+                TAG_PROPERTIES.NAME,
+                TAG_PROPERTIES.CHARSET,
+                TAG_PROPERTIES.HTTPEQUIV,
+                TAG_PROPERTIES.PROPERTY,
+                TAG_PROPERTIES.ITEM_PROP,
+            ],
+            propsList
+        ),
+        noscriptTags: getTagsFromPropsList(
+            TAG_NAMES.NOSCRIPT,
+            [TAG_PROPERTIES.INNER_HTML],
+            propsList
+        ),
+        onChangeClientState: getOnChangeClientState(propsList),
+        scriptTags: getTagsFromPropsList(
+            TAG_NAMES.SCRIPT,
+            [TAG_PROPERTIES.SRC, TAG_PROPERTIES.INNER_HTML],
+            propsList
+        ),
+        styleTags: getTagsFromPropsList(
+            TAG_NAMES.STYLE,
+            [TAG_PROPERTIES.CSS_TEXT],
+            propsList
+        ),
+        title: getTitleFromPropsList(propsList),
+        titleAttributes: getAttributesFromPropsList(
+            ATTRIBUTE_NAMES.TITLE,
+            propsList
+        ),
+    };
+};
 
 const rafPolyfill = (() => {
     let clock = Date.now();
@@ -293,13 +300,13 @@ const cancelAnimationFrame =
           cafPolyfill
         : global.cancelAnimationFrame || cafPolyfill;
 
-const warn = msg => {
+const warn = (msg) => {
     return console && typeof console.warn === "function" && console.warn(msg);
 };
 
 let _helmetCallback = null;
 
-const handleClientStateChange = newState => {
+const handleClientStateChange = (newState) => {
     if (_helmetCallback) {
         cancelAnimationFrame(_helmetCallback);
     }
@@ -328,7 +335,7 @@ const commitTagChanges = (newState, cb) => {
         scriptTags,
         styleTags,
         title,
-        titleAttributes
+        titleAttributes,
     } = newState;
     updateAttributes(TAG_NAMES.BODY, bodyAttributes);
     updateAttributes(TAG_NAMES.HTML, htmlAttributes);
@@ -341,14 +348,14 @@ const commitTagChanges = (newState, cb) => {
         metaTags: updateTags(TAG_NAMES.META, metaTags),
         noscriptTags: updateTags(TAG_NAMES.NOSCRIPT, noscriptTags),
         scriptTags: updateTags(TAG_NAMES.SCRIPT, scriptTags),
-        styleTags: updateTags(TAG_NAMES.STYLE, styleTags)
+        styleTags: updateTags(TAG_NAMES.STYLE, styleTags),
     };
 
     const addedTags = {};
     const removedTags = {};
 
-    Object.keys(tagUpdates).forEach(tagType => {
-        const {newTags, oldTags} = tagUpdates[tagType];
+    Object.keys(tagUpdates).forEach((tagType) => {
+        const { newTags, oldTags } = tagUpdates[tagType];
 
         if (newTags.length) {
             addedTags[tagType] = newTags;
@@ -363,7 +370,7 @@ const commitTagChanges = (newState, cb) => {
     onChangeClientState(newState, addedTags, removedTags);
 };
 
-const flattenArray = possibleArray => {
+const flattenArray = (possibleArray) => {
     return Array.isArray(possibleArray)
         ? possibleArray.join("")
         : possibleArray;
@@ -432,7 +439,7 @@ const updateTags = (type, tags) => {
     let indexToDelete;
 
     if (tags && tags.length) {
-        tags.forEach(tag => {
+        tags.forEach((tag) => {
             const newElement = document.createElement(type);
 
             for (const attribute in tag) {
@@ -473,16 +480,16 @@ const updateTags = (type, tags) => {
         });
     }
 
-    oldTags.forEach(tag => tag.parentNode.removeChild(tag));
-    newTags.forEach(tag => headElement.appendChild(tag));
+    oldTags.forEach((tag) => tag.parentNode.removeChild(tag));
+    newTags.forEach((tag) => headElement.appendChild(tag));
 
     return {
         oldTags,
-        newTags
+        newTags,
     };
 };
 
-const generateElementAttributesAsString = attributes =>
+const generateElementAttributesAsString = (attributes) =>
     Object.keys(attributes).reduce((str, key) => {
         const attr =
             typeof attributes[key] !== "undefined"
@@ -509,7 +516,7 @@ const generateTagsAsString = (type, tags, encode) =>
     tags.reduce((str, tag) => {
         const attributeHtml = Object.keys(tag)
             .filter(
-                attribute =>
+                (attribute) =>
                     !(
                         attribute === TAG_PROPERTIES.INNER_HTML ||
                         attribute === TAG_PROPERTIES.CSS_TEXT
@@ -553,7 +560,7 @@ const generateTitleAsReactComponent = (type, title, attributes) => {
     // assigning into an array to define toString function on it
     const initProps = {
         key: title,
-        [HELMET_ATTRIBUTE]: true
+        [HELMET_ATTRIBUTE]: true,
     };
     const props = convertElementAttributestoReactProps(attributes, initProps);
 
@@ -564,10 +571,10 @@ const generateTagsAsReactComponent = (type, tags) =>
     tags.map((tag, i) => {
         const mappedTag = {
             key: i,
-            [HELMET_ATTRIBUTE]: true
+            [HELMET_ATTRIBUTE]: true,
         };
 
-        Object.keys(tag).forEach(attribute => {
+        Object.keys(tag).forEach((attribute) => {
             const mappedAttribute = REACT_TAG_MAP[attribute] || attribute;
 
             if (
@@ -575,7 +582,7 @@ const generateTagsAsReactComponent = (type, tags) =>
                 mappedAttribute === TAG_PROPERTIES.CSS_TEXT
             ) {
                 const content = tag.innerHTML || tag.cssText;
-                mappedTag.dangerouslySetInnerHTML = {__html: content};
+                mappedTag.dangerouslySetInnerHTML = { __html: content };
             } else {
                 mappedTag[mappedAttribute] = tag[attribute];
             }
@@ -601,18 +608,18 @@ const getMethodsForTag = (type, tags, encode) => {
                         tags.title,
                         tags.titleAttributes,
                         encode
-                    )
+                    ),
             };
         case ATTRIBUTE_NAMES.BODY:
         case ATTRIBUTE_NAMES.HTML:
             return {
                 toComponent: () => convertElementAttributestoReactProps(tags),
-                toString: () => generateElementAttributesAsString(tags)
+                toString: () => generateElementAttributesAsString(tags),
             };
         default:
             return {
                 toComponent: () => generateTagsAsReactComponent(type, tags),
-                toString: () => generateTagsAsString(type, tags, encode)
+                toString: () => generateTagsAsString(type, tags, encode),
             };
     }
 };
@@ -628,7 +635,7 @@ const mapStateOnServer = ({
     scriptTags,
     styleTags,
     title = "",
-    titleAttributes
+    titleAttributes,
 }) => ({
     base: getMethodsForTag(TAG_NAMES.BASE, baseTag, encode),
     bodyAttributes: getMethodsForTag(
@@ -646,12 +653,16 @@ const mapStateOnServer = ({
     noscript: getMethodsForTag(TAG_NAMES.NOSCRIPT, noscriptTags, encode),
     script: getMethodsForTag(TAG_NAMES.SCRIPT, scriptTags, encode),
     style: getMethodsForTag(TAG_NAMES.STYLE, styleTags, encode),
-    title: getMethodsForTag(TAG_NAMES.TITLE, {title, titleAttributes}, encode)
+    title: getMethodsForTag(
+        TAG_NAMES.TITLE,
+        { title, titleAttributes },
+        encode
+    ),
 });
 
-export {convertReactPropstoHtmlAttributes};
-export {handleClientStateChange};
-export {mapStateOnServer};
-export {reducePropsToState};
-export {requestAnimationFrame};
-export {warn};
+export { convertReactPropstoHtmlAttributes };
+export { handleClientStateChange };
+export { mapStateOnServer };
+export { reducePropsToState };
+export { requestAnimationFrame };
+export { warn };

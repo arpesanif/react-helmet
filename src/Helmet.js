@@ -31,6 +31,7 @@ const Helmet = Component =>
          * @param {String} titleTemplate: "MySite.com - %s"
          */
         static propTypes = {
+            order: PropTypes.number,
             base: PropTypes.object,
             bodyAttributes: PropTypes.object,
             children: PropTypes.oneOfType([
@@ -53,6 +54,7 @@ const Helmet = Component =>
         };
 
         static defaultProps = {
+            order: 0,
             defer: true,
             encodeSpecialCharacters: true
         };
